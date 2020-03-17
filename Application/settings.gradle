@@ -1,0 +1,2 @@
+rootProject.name='NotiPi'
+include ':app'
