@@ -1,0 +1,4 @@
+Application/.idea*
+Application/.gradle*
+Application/app/app.iml
+Application/local.properties
