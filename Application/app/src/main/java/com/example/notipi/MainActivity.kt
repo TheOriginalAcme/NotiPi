@@ -1,7 +1,10 @@
 package com.example.notipi
 
-import android.content.*
-import androidx.appcompat.app.AppCompatActivity
+import android.app.Notification
+import android.content.ComponentName
+import android.content.DialogInterface
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
@@ -11,31 +14,46 @@ import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 
+
+@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 class MyNotificationListener : NotificationListenerService() {
     override fun onBind(intent: Intent) : IBinder?
     {
         return super.onBind(intent)
     }
 
+    @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onNotificationPosted(sbn: StatusBarNotification?)
     {
-        Log.d("Notification", sbn.toString())
-        var intent = Intent("com.example.notipi")
-        intent.putExtra("NotificationString", sbn.toString())
-        sendBroadcast(intent)
+        val pack = sbn!!.packageName.substringAfter("com.")
+        var ticker = ""
+        if (sbn.notification.tickerText != null) {
+            ticker = sbn.notification.tickerText.toString()
+        }
+        val extras = sbn.notification.extras
+        val title = extras.getString("android.title")
+        val text = extras.getCharSequence("android.text").toString()
+
+        Log.i("Notification", "############################")
+//        Log.d("Notification", sbn.toString())
+        Log.i("Package", pack)
+        Log.i("Ticker", ticker)
+        Log.i("Title", title)
+        Log.i("Text", text)
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?)
     {
         super.onNotificationRemoved(sbn)
+        Log.d("Notification", "removed")
     }
 }
 
 class MainActivity : AppCompatActivity() {
-
-    lateinit var notificationReceiver : NotificationReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,17 +65,11 @@ class MainActivity : AppCompatActivity() {
             buildNotificationServiceAlertDialog().show()
         }
 
-        var intentfilter = IntentFilter()
-        intentfilter.addAction("com.example.notipi")
-        notificationReceiver = NotificationReceiver()
-        registerReceiver(notificationReceiver, intentfilter)
-
         Log.d("yanai says", "Finished on create")
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(notificationReceiver)
     }
 
     fun getNotificationsPressed(view: View)
@@ -104,10 +116,4 @@ class MainActivity : AppCompatActivity() {
         return alertDialogBuilder.create()
     }
 
-    class NotificationReceiver : BroadcastReceiver()
-    {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            Log.d("Notification Receiver", intent.toString())
-        }
-    }
 }
