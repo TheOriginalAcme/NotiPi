@@ -13,10 +13,14 @@ import android.service.notification.StatusBarNotification
 import android.text.TextUtils
 import android.util.Log
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
@@ -54,6 +58,8 @@ class MyNotificationListener : NotificationListenerService() {
 }
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var nameInput: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -116,4 +122,13 @@ class MainActivity : AppCompatActivity() {
         return alertDialogBuilder.create()
     }
 
+    fun submitName(view: View) {
+        nameInput = findViewById<EditText>(R.id.nameInput)
+        Log.d("DEBUG", nameInput.text.toString())
+        showToast(nameInput.text.toString())
+    }
+
+    private fun showToast(text: String) {
+        Toast.makeText(applicationContext, text, Toast.LENGTH_SHORT).show()
+    }
 }
