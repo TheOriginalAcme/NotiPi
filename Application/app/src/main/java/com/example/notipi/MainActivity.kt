@@ -1,9 +1,9 @@
 package com.example.notipi
 
+import android.annotation.SuppressLint
 import android.app.Notification
-import android.content.ComponentName
-import android.content.DialogInterface
-import android.content.Intent
+import android.content.*
+import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
@@ -83,7 +83,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("Yanai says", "Button was pressed")
     }
 
-    fun isNotificationServiceEnabled() : Boolean
+    private fun isNotificationServiceEnabled() : Boolean
     {
         var flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
 
@@ -106,7 +106,7 @@ class MainActivity : AppCompatActivity() {
         return false
     }
 
-    fun buildNotificationServiceAlertDialog() : AlertDialog
+    private fun buildNotificationServiceAlertDialog() : AlertDialog
     {
         var alertDialogBuilder = AlertDialog.Builder(this)
         alertDialogBuilder.setTitle("Please let me see your notifications")
@@ -130,5 +130,48 @@ class MainActivity : AppCompatActivity() {
 
     private fun showToast(text: String) {
         Toast.makeText(applicationContext, text, Toast.LENGTH_SHORT).show()
+    }
+}
+
+/**
+ * A BroadcastReceiver that notifies of important Wi-Fi p2p events.
+ */
+class WiFiDirectBroadcastReceiver(
+    private val manager: WifiP2pManager,
+    private val channel: WifiP2pManager.Channel
+//    private val activity: MyWifiActivity
+) : BroadcastReceiver() {
+
+    @SuppressLint("LongLogTag")
+    override fun onReceive(context: Context, intent: Intent) {
+        when (intent.action) {
+            WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> {
+                // Check to see if Wi-Fi is enabled and notify appropriate activity
+                Log.d("WifiDirectBroadcastReceiver", "Wifi state changed")
+                when (intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)) {
+                    WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
+                        // Wifi P2P is enabled
+                    }
+                    else -> {
+                        // Wi-Fi P2P is not enabled
+                    }
+                }
+            }
+            WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
+                // Call WifiP2pManager.requestPeers() to get a list of current peers
+                Log.d("WifiDirectBroadcastReceiver", "Wifi peers changed")
+            }
+            WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
+                // Respond to new connection or disconnections
+                // Applications can use requestConnectionInfo(), requestNetworkInfo(),
+                // or requestGroupInfo() to retrieve the current connection information.
+                Log.d("WifiDirectBroadcastReceiver", "new connection/disconnection")
+            }
+            WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
+                // Respond to this device's wifi state changing
+                // Applications can use requestDeviceInfo() to retrieve the current connection information.
+                Log.d("WifiDirectBroadcastReceiver", "device's wifi state changed")
+            }
+        }
     }
 }
