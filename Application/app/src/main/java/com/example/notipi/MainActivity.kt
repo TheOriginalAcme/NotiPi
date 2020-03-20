@@ -76,6 +76,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d("MainActivity", "Setting content view")
         setContentView(R.layout.activity_main)
         Log.d("MainActivity", "We are up and running")
 
@@ -101,6 +102,7 @@ class MainActivity : AppCompatActivity() {
             }
         })
         lateinit var selectedDevice: WifiP2pDevice
+        var foundRequestedDevice: Boolean = false
         manager?.requestPeers(mChannel, object: WifiP2pManager.PeerListListener {
             override fun onPeersAvailable(peers: WifiP2pDeviceList?) {
                 Log.d("MainActivity", "Found available peers:")
@@ -109,10 +111,16 @@ class MainActivity : AppCompatActivity() {
                     if (device.deviceName == "NotiPi") {
                         Log.d("MainActivity", "Found NotiPi peer: $device")
                         selectedDevice = device
+                        foundRequestedDevice = true
                     }
                 }
             }
         })
+        if (!foundRequestedDevice)
+        {
+            Log.d("MainActivity", "Did not find NotiPi peer")
+            return
+        }
         Log.d("MainActivity", "We found the device that you want to connect to")
         val config = WifiP2pConfig()
         config.deviceAddress = selectedDevice.deviceAddress
