@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
     private val manager: WifiP2pManager? by lazy(LazyThreadSafetyMode.NONE) {
         getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager?
     }
-    var mChannel: WifiP2pManager.Channel? = null
+    lateinit var mChannel: WifiP2pManager.Channel
     var receiver: BroadcastReceiver? = null
     val intentFilter = IntentFilter().apply {
         addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
@@ -73,6 +73,7 @@ class MainActivity : AppCompatActivity() {
         addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
         addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION)
     }
+    var connectedToPi : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -87,11 +88,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         Log.d("MainActivity", "Wifi P2P stuff...")
-        mChannel = manager?.initialize(this, mainLooper, null)
-        mChannel?.also { channel ->
-            receiver = WiFiDirectBroadcastReceiver(manager, channel, this)
-        }
+        mChannel = manager?.initialize(this, mainLooper, null)!!
 
+        Log.d("MainActivity", "Finished on create")
+    }
+
+    public fun discoverAndHandlePeers() {
         manager?.discoverPeers(mChannel, object: WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 Log.d("MainActivity", "Successfully discovered Peers")
@@ -101,8 +103,21 @@ class MainActivity : AppCompatActivity() {
                 Log.d("MainActivity", "Failed to discover Peers (reason: $reasonCode)")
             }
         })
-        lateinit var selectedDevice: WifiP2pDevice
-        var foundRequestedDevice: Boolean = false
+
+    }
+
+    public fun tryConnectToPi() {
+        var piDevice: WifiP2pDevice? = getPiDevice()
+
+        if (null != piDevice) {
+            Log.d("tryConnectPi", "Failed to find pi device")
+        }
+
+        connectToPiDevice(piDevice?.deviceAddress)
+    }
+
+    private fun getPiDevice() : WifiP2pDevice? {
+        var piDevice: WifiP2pDevice? = null
         manager?.requestPeers(mChannel, object: WifiP2pManager.PeerListListener {
             override fun onPeersAvailable(peers: WifiP2pDeviceList?) {
                 Log.d("MainActivity", "Found available peers:")
@@ -110,25 +125,25 @@ class MainActivity : AppCompatActivity() {
                 for (device in peers?.deviceList!!) {
                     if (device.deviceName == "NotiPi") {
                         Log.d("MainActivity", "Found NotiPi peer: $device")
-                        selectedDevice = device
-                        foundRequestedDevice = true
+                        piDevice = device
+                        break
                     }
                 }
             }
         })
-        if (!foundRequestedDevice)
-        {
-            Log.d("MainActivity", "Did not find NotiPi peer")
-            return
-        }
-        Log.d("MainActivity", "We found the device that you want to connect to")
+        return piDevice
+    }
+
+    private fun connectToPiDevice(deviceAddress : String?) {
         val config = WifiP2pConfig()
-        config.deviceAddress = selectedDevice.deviceAddress
-        mChannel?.also { channel ->
+
+        config.deviceAddress = deviceAddress
+        mChannel.also { channel ->
             manager?.connect(channel, config, object : WifiP2pManager.ActionListener {
                 override fun onSuccess() {
                     Log.d("MainActivity", "Connected to NotiPi device (${config.deviceAddress})")
                     Log.d("MainActivity", "Starting server...")
+                    connectedToPi = true
                     DataServerAsyncTask(findViewById<TextView>(R.id.textView)).execute()
                 }
 
@@ -137,13 +152,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             )}
-
-        Log.d("MainActivity", "Finished on create")
     }
 
     /** register the BroadcastReceiver with the intent values to be matched  */
     override fun onResume() {
         super.onResume()
+        receiver = WiFiDirectBroadcastReceiver(manager, mChannel, this)
         registerReceiver(receiver, intentFilter)
     }
 
@@ -231,6 +245,7 @@ class WiFiDirectBroadcastReceiver(
                     WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
                         // Wifi P2P is enabled
                         Log.d("WifiDirectBroadcastReceiver", "-> Wifi P2P is enabled")
+                        activity.discoverAndHandlePeers()
                     }
                     else -> {
                         // Wi-Fi P2P is not enabled
@@ -241,10 +256,9 @@ class WiFiDirectBroadcastReceiver(
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
                 // Call WifiP2pManager.requestPeers() to get a list of current peers
                 Log.d("WifiDirectBroadcastReceiver", "Wifi peers changed")
-                manager?.requestPeers(channel) { peers: WifiP2pDeviceList? ->
-                    // Handle peers list
-                    Log.d("WifiDirectBroadcastReceiver", "-> Peers list:")
-                    Log.d(" -> Peers List", peers.toString())
+                if (!activity.connectedToPi)
+                {
+                    activity.tryConnectToPi()
                 }
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
