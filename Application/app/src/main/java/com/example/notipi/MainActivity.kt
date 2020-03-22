@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "Finished on create")
     }
 
-    public fun discoverAndHandlePeers() {
+    public fun discoverPeers(view: View) {
         manager?.discoverPeers(mChannel, object: WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 Log.d("MainActivity", "Successfully discovered Peers")
@@ -101,6 +101,7 @@ class MainActivity : AppCompatActivity() {
 
             override fun onFailure(reasonCode: Int) {
                 Log.d("MainActivity", "Failed to discover Peers (reason: $reasonCode)")
+                showToast("Failed to discover peers")
             }
         })
 
@@ -221,7 +222,7 @@ class MainActivity : AppCompatActivity() {
         showToast(nameInput.text.toString())
     }
 
-    private fun showToast(text: String) {
+    fun showToast(text: String) {
         Toast.makeText(applicationContext, text, Toast.LENGTH_SHORT).show()
     }
 }
@@ -245,11 +246,12 @@ class WiFiDirectBroadcastReceiver(
                     WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
                         // Wifi P2P is enabled
                         Log.d("WifiDirectBroadcastReceiver", "-> Wifi P2P is enabled")
-                        activity.discoverAndHandlePeers()
+                        activity.showToast("Wifi is enabled")
                     }
                     else -> {
                         // Wi-Fi P2P is not enabled
                         Log.d("WifiDirectBroadcastReceiver", "-> Wifi P2P is not enabled")
+                        activity.showToast("Wifi is disabled")
                     }
                 }
             }

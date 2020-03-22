@@ -47,7 +47,7 @@
         android:id="@+id/get_notifications_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="getNotificationsPressed"
+        android:onClick="discoverPeers"
         android:text="Get Notifications"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
