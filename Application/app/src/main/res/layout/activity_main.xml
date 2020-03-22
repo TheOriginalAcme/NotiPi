@@ -43,18 +43,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.62" />
 
-    <Button
-        android:id="@+id/get_notifications_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="discoverPeers"
-        android:text="Get Notifications"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.733" />
-
     <TextView
         android:id="@+id/textView"
         android:layout_width="wrap_content"

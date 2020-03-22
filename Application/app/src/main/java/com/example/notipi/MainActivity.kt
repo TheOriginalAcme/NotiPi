@@ -2,8 +2,8 @@ package com.example.notipi
 
 import android.annotation.SuppressLint
 import android.content.*
+import android.net.NetworkInfo
 import android.net.wifi.p2p.WifiP2pConfig
-import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.AsyncTask
@@ -93,7 +93,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "Finished on create")
     }
 
-    public fun discoverPeers(view: View) {
+    public fun discoverPeers() {
         manager?.discoverPeers(mChannel, object: WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 Log.d("MainActivity", "Successfully discovered Peers")
@@ -107,18 +107,7 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    public fun tryConnectToPi() {
-        var piDevice: WifiP2pDevice? = getPiDevice()
-
-        if (null != piDevice) {
-            Log.d("tryConnectPi", "Failed to find pi device")
-        }
-
-        connectToPiDevice(piDevice?.deviceAddress)
-    }
-
-    private fun getPiDevice() : WifiP2pDevice? {
-        var piDevice: WifiP2pDevice? = null
+    fun findPiDeviceAndConnect() {
         manager?.requestPeers(mChannel, object: WifiP2pManager.PeerListListener {
             override fun onPeersAvailable(peers: WifiP2pDeviceList?) {
                 Log.d("MainActivity", "Found available peers:")
@@ -126,33 +115,33 @@ class MainActivity : AppCompatActivity() {
                 for (device in peers?.deviceList!!) {
                     if (device.deviceName == "NotiPi") {
                         Log.d("MainActivity", "Found NotiPi peer: $device")
-                        piDevice = device
-                        break
+                        connectToPiDevice(device.deviceAddress)
                     }
                 }
             }
         })
-        return piDevice
     }
 
     private fun connectToPiDevice(deviceAddress : String?) {
         val config = WifiP2pConfig()
 
         config.deviceAddress = deviceAddress
-        mChannel.also { channel ->
-            manager?.connect(channel, config, object : WifiP2pManager.ActionListener {
-                override fun onSuccess() {
-                    Log.d("MainActivity", "Connected to NotiPi device (${config.deviceAddress})")
-                    Log.d("MainActivity", "Starting server...")
-                    connectedToPi = true
-                    DataServerAsyncTask(findViewById<TextView>(R.id.textView)).execute()
-                }
-
-                override fun onFailure(reason: Int) {
-                    Log.d("MainActivity", "Failed to connect to NotiPi device (${config.deviceAddress})")
-                }
+        config.wps.pin = "13371337"
+        manager?.connect(mChannel, config, object : WifiP2pManager.ActionListener {
+            override fun onSuccess() {
+                Log.d("MainActivity", "Connected to NotiPi device (${config.deviceAddress})")
+                Log.d("MainActivity", "Starting server...")
+                connectedToPi = true
+                DataServerAsyncTask(findViewById<TextView>(R.id.textView)).execute()
             }
-            )}
+
+            override fun onFailure(reason: Int) {
+                Log.d(
+                    "MainActivity",
+                    "Failed to connect to NotiPi device (${config.deviceAddress})"
+                )
+            }
+        })
     }
 
     /** register the BroadcastReceiver with the intent values to be matched  */
@@ -247,6 +236,7 @@ class WiFiDirectBroadcastReceiver(
                         // Wifi P2P is enabled
                         Log.d("WifiDirectBroadcastReceiver", "-> Wifi P2P is enabled")
                         activity.showToast("Wifi is enabled")
+                        activity.discoverPeers()
                     }
                     else -> {
                         // Wi-Fi P2P is not enabled
@@ -260,7 +250,7 @@ class WiFiDirectBroadcastReceiver(
                 Log.d("WifiDirectBroadcastReceiver", "Wifi peers changed")
                 if (!activity.connectedToPi)
                 {
-                    activity.tryConnectToPi()
+                    activity.findPiDeviceAndConnect()
                 }
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
@@ -268,6 +258,17 @@ class WiFiDirectBroadcastReceiver(
                 // Applications can use requestConnectionInfo(), requestNetworkInfo(),
                 // or requestGroupInfo() to retrieve the current connection information.
                 Log.d("WifiDirectBroadcastReceiver", "new connection/disconnection")
+                val networkState: NetworkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO)
+
+                if (networkState.isConnected()) {
+                    activity.showToast("Connection Status: Connected")
+                    Log.d("WifiDirectBroadcastReceiver", "Connected")
+                } else {
+                    activity.showToast("Connection Status: Disconnected")
+                    Log.d("WifiDirectBroadcastReceiver", "Not Connected")
+                    activity.connectedToPi = false
+                    manager!!.cancelConnect(channel, null)
+                }
             }
             WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
                 // Respond to this device's wifi state changing
