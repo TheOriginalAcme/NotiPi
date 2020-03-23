@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity()
 {
     private var notificationManager: NotificationManager = NotificationManager(this)
     private var permissionRequester : PermissionRequester = PermissionRequester(this)
-    private var wifiP2pManager : WifiP2pManager = WifiP2pManager(this)
+    private lateinit var wifiP2pManager : WifiP2pManager
     private lateinit var nameInput: EditText
     var connectedToPi : Boolean = false
 
@@ -29,6 +29,8 @@ class MainActivity : AppCompatActivity()
         {
             notificationManager.buildNotificationServiceAlertDialog().show()
         }
+
+        wifiP2pManager = WifiP2pManager(this)
 
         Log.d("MainActivity", "Finished on create")
     }

@@ -1,17 +1,13 @@
 package com.example.notipi
 
-import android.app.AlertDialog
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.IntentFilter
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
-import android.os.Build
-import android.provider.Settings
-import android.text.TextUtils
 import android.util.Log
 import android.widget.TextView
-import android.widget.Toast
-import androidx.annotation.RequiresApi
 
 class WifiP2pManager (
     private var activity: MainActivity
