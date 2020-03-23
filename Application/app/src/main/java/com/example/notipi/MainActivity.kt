@@ -124,9 +124,6 @@ class MainActivity : AppCompatActivity()
         unregisterReceiver(receiver)
     }
 
-
-
-
     fun submitName(view: View) {
         nameInput = findViewById<EditText>(R.id.nameInput)
         Log.d("DEBUG", nameInput.text.toString())
