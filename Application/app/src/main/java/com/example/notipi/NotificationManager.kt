@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
-import android.os.IBinder
 import android.provider.Settings
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -14,15 +13,11 @@ import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import android.app.Activity
-
 
 class NotificationManager(
-    context: Context
+    private var context: Context
 )
 {
-    var context = context
-
     fun isNotificationServiceEnabled() : Boolean
     {
         var flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
@@ -59,10 +54,6 @@ class NotificationManager(
 
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
 class MyNotificationListener : NotificationListenerService() {
-    override fun onBind(intent: Intent) : IBinder?
-    {
-        return super.onBind(intent)
-    }
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onNotificationPosted(sbn: StatusBarNotification?)
@@ -77,7 +68,6 @@ class MyNotificationListener : NotificationListenerService() {
         val text = extras.getCharSequence("android.text").toString()
 
         Log.i("Notification", "############################")
-//        Log.d("Notification", sbn.toString())
         Log.i("Package", pack)
         Log.i("Ticker", ticker)
         Log.i("Title", title)

@@ -1,28 +1,27 @@
 package com.example.notipi
 
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
 import android.content.IntentFilter
-import android.net.NetworkInfo
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
-import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import java.net.ServerSocket
 
 
+@RequiresApi(Build.VERSION_CODES.M)
 class MainActivity : AppCompatActivity()
 {
     var notificationManager: NotificationManager = NotificationManager(this)
+    private var permissionRequester : PermissionRequester = PermissionRequester(this)
     private lateinit var nameInput: EditText
     private val manager: WifiP2pManager? by lazy(LazyThreadSafetyMode.NONE) {
         getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager?
@@ -45,6 +44,7 @@ class MainActivity : AppCompatActivity()
 
         Log.d("MainActivity", "Checking that NotificationService is enabled")
 
+        permissionRequester.getNeededPermissions()
         if (!notificationManager.isNotificationServiceEnabled())
         {
             notificationManager.buildNotificationServiceAlertDialog().show()
@@ -135,103 +135,4 @@ class MainActivity : AppCompatActivity()
     }
 }
 
-/**
- * A BroadcastReceiver that notifies of important Wi-Fi p2p events.
- */
-class WiFiDirectBroadcastReceiver(
-    private val manager: WifiP2pManager?,
-    private val channel: WifiP2pManager.Channel,
-    private val activity: MainActivity
-) : BroadcastReceiver() {
 
-    @SuppressLint("LongLogTag")
-    override fun onReceive(context: Context, intent: Intent) {
-        when (intent.action) {
-            WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION -> {
-                // Check to see if Wi-Fi is enabled and notify appropriate activity
-                Log.d("WifiDirectBroadcastReceiver", "Wifi state changed")
-                when (intent.getIntExtra(WifiP2pManager.EXTRA_WIFI_STATE, -1)) {
-                    WifiP2pManager.WIFI_P2P_STATE_ENABLED -> {
-                        // Wifi P2P is enabled
-                        Log.d("WifiDirectBroadcastReceiver", "-> Wifi P2P is enabled")
-                        activity.showToast("Wifi is enabled")
-                        activity.discoverPeers()
-                    }
-                    else -> {
-                        // Wi-Fi P2P is not enabled
-                        Log.d("WifiDirectBroadcastReceiver", "-> Wifi P2P is not enabled")
-                        activity.showToast("Wifi is disabled")
-                    }
-                }
-            }
-            WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
-                // Call WifiP2pManager.requestPeers() to get a list of current peers
-                Log.d("WifiDirectBroadcastReceiver", "Wifi peers changed")
-                if (!activity.connectedToPi)
-                {
-                    activity.findPiDeviceAndConnect()
-                }
-            }
-            WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
-                // Respond to new connection or disconnections
-                // Applications can use requestConnectionInfo(), requestNetworkInfo(),
-                // or requestGroupInfo() to retrieve the current connection information.
-                Log.d("WifiDirectBroadcastReceiver", "new connection/disconnection")
-                val networkState: NetworkInfo = intent.getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO)
-
-                if (networkState.isConnected()) {
-                    activity.showToast("Connection Status: Connected")
-                    Log.d("WifiDirectBroadcastReceiver", "Connected")
-                } else {
-                    activity.showToast("Connection Status: Disconnected")
-                    Log.d("WifiDirectBroadcastReceiver", "Not Connected")
-                    activity.connectedToPi = false
-                    manager!!.cancelConnect(channel, null)
-                }
-            }
-            WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION -> {
-                // Respond to this device's wifi state changing
-                // Applications can use requestDeviceInfo() to retrieve the current connection information.
-                Log.d("WifiDirectBroadcastReceiver", "device's wifi state changed")
-            }
-        }
-    }
-}
-
-class DataServerAsyncTask(
-    private var statusText: TextView
-) : AsyncTask<Void, Void, String?>() {
-
-    override fun doInBackground(vararg params: Void): String? {
-        /**
-         * Create a server socket.
-         */
-        val serverSocket = ServerSocket(8888)
-        Log.d("DataServer", "Socket opened")
-        return serverSocket.use {
-            /**
-             * Wait for client connections. This call blocks until a
-             * connection is accepted from a client.
-             */
-            val client = serverSocket.accept()
-            Log.d("DataServer", "Connection done")
-            /**
-             * If this code is reached, a client has connected and transferred data
-             * Save the input stream from the client
-             */
-            val inputStream = client.getInputStream()
-            Log.d("DataServer", inputStream.toString())
-            serverSocket.close()
-            "Data: $inputStream"
-        }
-    }
-
-    /**
-     * Start activity that can handle input stream
-     */
-    override fun onPostExecute(result: String?) {
-        result?.run {
-            statusText.text = "Data received - $result"
-        }
-    }
-}
