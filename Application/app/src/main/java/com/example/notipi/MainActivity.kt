@@ -1,73 +1,35 @@
 package com.example.notipi
 
 import android.annotation.SuppressLint
-import android.content.*
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.net.NetworkInfo
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.AsyncTask
-import android.os.Build
 import android.os.Bundle
-import android.os.IBinder
-import android.provider.Settings
-import android.service.notification.NotificationListenerService
-import android.service.notification.StatusBarNotification
-import android.text.TextUtils
 import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import java.net.ServerSocket
 
 
-@RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-class MyNotificationListener : NotificationListenerService() {
-    override fun onBind(intent: Intent) : IBinder?
-    {
-        return super.onBind(intent)
-    }
-
-    @RequiresApi(Build.VERSION_CODES.KITKAT)
-    override fun onNotificationPosted(sbn: StatusBarNotification?)
-    {
-        val pack = sbn!!.packageName.substringAfter("com.")
-        var ticker = ""
-        if (sbn.notification.tickerText != null) {
-            ticker = sbn.notification.tickerText.toString()
-        }
-        val extras = sbn.notification.extras
-        val title = extras.getString("android.title")
-        val text = extras.getCharSequence("android.text").toString()
-
-        Log.i("Notification", "############################")
-//        Log.d("Notification", sbn.toString())
-        Log.i("Package", pack)
-        Log.i("Ticker", ticker)
-        Log.i("Title", title)
-        Log.i("Text", text)
-    }
-
-    override fun onNotificationRemoved(sbn: StatusBarNotification?)
-    {
-        super.onNotificationRemoved(sbn)
-        Log.d("Notification", "removed")
-    }
-}
-
-class MainActivity : AppCompatActivity() {
-
+class MainActivity : AppCompatActivity()
+{
+    var notificationManager: NotificationManager = NotificationManager(this)
     private lateinit var nameInput: EditText
     private val manager: WifiP2pManager? by lazy(LazyThreadSafetyMode.NONE) {
         getSystemService(Context.WIFI_P2P_SERVICE) as WifiP2pManager?
     }
     lateinit var mChannel: WifiP2pManager.Channel
     var receiver: BroadcastReceiver? = null
-    val intentFilter = IntentFilter().apply {
+    private val intentFilter = IntentFilter().apply {
         addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION)
         addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION)
         addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION)
@@ -82,9 +44,10 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "We are up and running")
 
         Log.d("MainActivity", "Checking that NotificationService is enabled")
-        if (!isNotificationServiceEnabled())
+
+        if (!notificationManager.isNotificationServiceEnabled())
         {
-            buildNotificationServiceAlertDialog().show()
+            notificationManager.buildNotificationServiceAlertDialog().show()
         }
 
         Log.d("MainActivity", "Wifi P2P stuff...")
@@ -93,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         Log.d("MainActivity", "Finished on create")
     }
 
-    public fun discoverPeers() {
+    fun discoverPeers() {
         manager?.discoverPeers(mChannel, object: WifiP2pManager.ActionListener {
             override fun onSuccess() {
                 Log.d("MainActivity", "Successfully discovered Peers")
@@ -161,49 +124,8 @@ class MainActivity : AppCompatActivity() {
         unregisterReceiver(receiver)
     }
 
-    fun getNotificationsPressed(view: View)
-    {
-        Log.d("Yanai says", "Button was pressed")
-    }
 
-    private fun isNotificationServiceEnabled() : Boolean
-    {
-        var flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
 
-        if (flat != "")
-        {
-            var names = flat.split(':')
-
-            for (name in names)
-            {
-                var cn = ComponentName.unflattenFromString(name)
-                if (cn != null)
-                {
-                    if (TextUtils.equals(packageName, cn.packageName))
-                    {
-                        return true
-                    }
-                }
-            }
-        }
-        return false
-    }
-
-    private fun buildNotificationServiceAlertDialog() : AlertDialog
-    {
-        var alertDialogBuilder = AlertDialog.Builder(this)
-        alertDialogBuilder.setTitle("Please let me see your notifications")
-        alertDialogBuilder.setMessage("Hello. I want to see your notifications so click yes")
-        alertDialogBuilder.setPositiveButton("yes", DialogInterface.OnClickListener()
-            {
-                    dialogInterface: DialogInterface, i: Int -> startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"))
-            })
-        alertDialogBuilder.setNegativeButton("no", DialogInterface.OnClickListener()
-        {
-                dialogInterface: DialogInterface, i: Int -> Toast.makeText(applicationContext, "Your application might suck now", Toast.LENGTH_SHORT).show()
-        })
-        return alertDialogBuilder.create()
-    }
 
     fun submitName(view: View) {
         nameInput = findViewById<EditText>(R.id.nameInput)
