@@ -2,7 +2,6 @@ package com.example.notipi
 
 import android.app.AlertDialog
 import android.content.ComponentName
-import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
@@ -15,12 +14,12 @@ import android.widget.Toast
 import androidx.annotation.RequiresApi
 
 class NotificationManager(
-    private var context: Context
+    private var activity: MainActivity
 )
 {
     fun isNotificationServiceEnabled() : Boolean
     {
-        var flat = Settings.Secure.getString(context.contentResolver, "enabled_notification_listeners")
+        var flat = Settings.Secure.getString(activity.contentResolver, "enabled_notification_listeners")
 
         if (flat != "")
         {
@@ -31,7 +30,7 @@ class NotificationManager(
                 var cn = ComponentName.unflattenFromString(name)
                 if (cn != null)
                 {
-                    if (TextUtils.equals(context.packageName, cn.packageName))
+                    if (TextUtils.equals(activity.packageName, cn.packageName))
                     {
                         return true
                     }
@@ -43,11 +42,11 @@ class NotificationManager(
 
     fun buildNotificationServiceAlertDialog() : AlertDialog
     {
-        var alertDialogBuilder = AlertDialog.Builder(context)
+        var alertDialogBuilder = AlertDialog.Builder(activity)
         alertDialogBuilder.setTitle("Please let me see your notifications")
         alertDialogBuilder.setMessage("Hello. I want to see your notifications so click yes")
-        alertDialogBuilder.setPositiveButton("yes") { dialogInterface: DialogInterface, i: Int -> context.startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")) }
-        alertDialogBuilder.setNegativeButton("no") { dialogInterface: DialogInterface, i: Int -> Toast.makeText(context, "Your application might suck now", Toast.LENGTH_SHORT).show() }
+        alertDialogBuilder.setPositiveButton("yes") { dialogInterface: DialogInterface, i: Int -> activity.startActivity(Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS")) }
+        alertDialogBuilder.setNegativeButton("no") { dialogInterface: DialogInterface, i: Int -> Toast.makeText(activity, "Your application might suck now", Toast.LENGTH_SHORT).show() }
         return alertDialogBuilder.create()
     }
 }
