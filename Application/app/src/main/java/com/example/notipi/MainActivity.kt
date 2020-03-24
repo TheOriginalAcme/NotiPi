@@ -1,5 +1,6 @@
 package com.example.notipi
 
+import android.net.wifi.p2p.WifiP2pDevice
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,11 +11,16 @@ import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity()
 {
+    enum class connectionState {
+        NOT_CONNECTED, CONNECTING, CONNECTED
+    }
+
     private var notificationManager: NotificationManager = NotificationManager(this)
     private var permissionRequester : PermissionRequester = PermissionRequester(this)
     private lateinit var wifiP2pManager : WifiP2pManager
     private lateinit var nameInput: EditText
-    var connectedToPi : Boolean = false
+    var piConnectionState : connectionState = connectionState.NOT_CONNECTED
+    var currentDeviceList : MutableCollection<WifiP2pDevice> = mutableListOf<WifiP2pDevice>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,12 +41,12 @@ class MainActivity : AppCompatActivity()
         Log.d("MainActivity", "Finished on create")
     }
 
-    fun discoverPeers() {
-        wifiP2pManager.discoverPeers()
+    fun updateDeviceList() {
+        wifiP2pManager.updateDeviceList()
     }
 
-    fun findPiDeviceAndConnect() {
-        wifiP2pManager.findPiDeviceAndConnect()
+    fun discoverPeers() {
+        wifiP2pManager.discoverPeers()
     }
 
     /** register the BroadcastReceiver with the intent values to be matched  */

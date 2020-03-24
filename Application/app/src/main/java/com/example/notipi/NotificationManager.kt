@@ -58,7 +58,7 @@ class MyNotificationListener : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification?)
     {
         val pack = sbn!!.packageName.substringAfter("com.")
-        var ticker = ""
+        var ticker = "no ticker"
         if (sbn.notification.tickerText != null) {
             ticker = sbn.notification.tickerText.toString()
         }
