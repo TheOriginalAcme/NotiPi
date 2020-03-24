@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity()
 
     private var notificationManager: NotificationManager = NotificationManager(this)
     private var permissionRequester : PermissionRequester = PermissionRequester(this)
-    private lateinit var wifiP2pManager : WifiP2pManager
+    private lateinit var wifiDirectManager : WifiDirectManager
     private lateinit var nameInput: EditText
     var piConnectionState : connectionState = connectionState.NOT_CONNECTED
     var currentDeviceList : MutableCollection<WifiP2pDevice> = mutableListOf<WifiP2pDevice>()
@@ -36,33 +36,33 @@ class MainActivity : AppCompatActivity()
             notificationManager.buildNotificationServiceAlertDialog().show()
         }
 
-        wifiP2pManager = WifiP2pManager(this)
+        wifiDirectManager = WifiDirectManager(this)
 
         Log.d("MainActivity", "Finished on create")
     }
 
     fun updateDeviceList() {
-        wifiP2pManager.updateDeviceList()
+        wifiDirectManager.updateDeviceList()
     }
 
     fun discoverPeers() {
-        wifiP2pManager.discoverPeers()
+        wifiDirectManager.discoverPeers()
     }
 
     /** register the BroadcastReceiver with the intent values to be matched  */
     override fun onResume() {
         super.onResume()
-        wifiP2pManager.registerP2pReceiver()
+        wifiDirectManager.registerP2pReceiver()
     }
 
     override fun onPause() {
         super.onPause()
-        wifiP2pManager.unregisterP2pReceiver()
+        wifiDirectManager.unregisterP2pReceiver()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        wifiP2pManager.unregisterP2pReceiver()
+        wifiDirectManager.unregisterP2pReceiver()
     }
 
     fun submitName(view: View) {
