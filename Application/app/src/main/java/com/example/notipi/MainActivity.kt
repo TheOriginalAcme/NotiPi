@@ -1,13 +1,17 @@
 package com.example.notipi
 
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 
-
+@RequiresApi(Build.VERSION_CODES.M)
 class MainActivity : AppCompatActivity()
 {
     private var notificationManager: NotificationManager = NotificationManager(this)
@@ -33,6 +37,11 @@ class MainActivity : AppCompatActivity()
         wifiP2pManager = WifiP2pManager(this)
 
         Log.d("MainActivity", "Finished on create")
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        permissionRequester.getNeededPermissions()
     }
 
     fun discoverPeers() {

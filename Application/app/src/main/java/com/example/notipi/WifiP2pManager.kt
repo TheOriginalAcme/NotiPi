@@ -6,9 +6,12 @@ import android.content.IntentFilter
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDeviceList
 import android.net.wifi.p2p.WifiP2pManager
+import android.os.Build
 import android.util.Log
 import android.widget.TextView
+import androidx.annotation.RequiresApi
 
+@RequiresApi(Build.VERSION_CODES.M)
 class WifiP2pManager (
     private var activity: MainActivity
 )
