@@ -1,14 +1,18 @@
 package com.example.notipi
 
+import android.content.Intent
+import android.os.Build
 import android.net.wifi.p2p.WifiP2pDevice
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 
-
+@RequiresApi(Build.VERSION_CODES.M)
 class MainActivity : AppCompatActivity()
 {
     enum class connectionState {
@@ -39,6 +43,15 @@ class MainActivity : AppCompatActivity()
         wifiDirectManager = WifiDirectManager(this)
 
         Log.d("MainActivity", "Finished on create")
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        permissionRequester.getNeededPermissions()
+    }
+
+    fun discoverPeers() {
+        wifiP2pManager.discoverPeers()
     }
 
     fun updateDeviceList() {
