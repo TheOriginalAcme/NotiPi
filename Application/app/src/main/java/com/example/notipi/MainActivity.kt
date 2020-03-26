@@ -50,10 +50,6 @@ class MainActivity : AppCompatActivity()
         permissionRequester.getNeededPermissions()
     }
 
-    fun discoverPeers() {
-        wifiP2pManager.discoverPeers()
-    }
-
     fun updateDeviceList() {
         wifiDirectManager.updateDeviceList()
     }
