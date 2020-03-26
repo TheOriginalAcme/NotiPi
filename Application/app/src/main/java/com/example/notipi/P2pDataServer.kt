@@ -3,6 +3,9 @@ package com.example.notipi
 import android.os.AsyncTask
 import android.util.Log
 import android.widget.TextView
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import java.net.Socket
 
 class DataServerAsyncTask(
@@ -13,24 +16,16 @@ class DataServerAsyncTask(
         /**
          * Create a server socket.
          */
-        val clientSocket = Socket("192.168.1.2", 13109)
-        Log.d("DataServer", "Socket opened")
-        return clientSocket.use {
-            /**
-             * Wait for client connections. This call blocks until a
-             * connection is accepted from a client.
-             */
-            clientSocket.connect(clientSocket.localSocketAddress)
-            Log.d("DataServer", "Connection done")
-            /**
-             * If this code is reached, a client has connected and transferred data
-             * Save the input stream from the client
-             */
-            val inputStream = clientSocket.getInputStream()
-            Log.d("DataServer", inputStream.toString())
-            clientSocket.close()
-            "Data: $inputStream"
+        val ds = DatagramSocket()
+        val dp = DatagramPacket("Hello".toByteArray(), 5, InetAddress.getByName("192.168.1.2"), 13109)
+        ds.broadcast = true
+        while (true) {
+            ds.send(dp)
+            Log.d("DataServerAsyncTask", "Sent message")
+            Thread.sleep(1000)
         }
+
+        return "Hello"
     }
 
     /**
