@@ -38,6 +38,7 @@ class WiFiDirectBroadcastReceiver(
                         // Wi-Fi P2P is not enabled
                         Log.d("WifiDirectBroadcastReceiver", "-> Wifi P2P is not enabled")
                         activity.showToast("Wifi is disabled")
+                        activity.permissionRequester.requestWifiServices()
                     }
                 }
             }
@@ -57,11 +58,11 @@ class WiFiDirectBroadcastReceiver(
                     activity.showToast("Connection Status: Connected")
                     Log.d("WifiDirectBroadcastReceiver", "Connected")
                     manager!!.requestConnectionInfo(channel, WifiConnectionListener)
-                    activity.piConnectionState = MainActivity.connectionState.CONNECTED
+                    activity.piConnectionState = MainActivity.ConnectionState.CONNECTED
                 } else {
                     activity.showToast("Connection Status: Disconnected")
                     Log.d("WifiDirectBroadcastReceiver", "Not Connected")
-                    activity.piConnectionState = MainActivity.connectionState.NOT_CONNECTED
+                    activity.piConnectionState = MainActivity.ConnectionState.NOT_CONNECTED
                     manager!!.cancelConnect(channel, null)
                 }
 

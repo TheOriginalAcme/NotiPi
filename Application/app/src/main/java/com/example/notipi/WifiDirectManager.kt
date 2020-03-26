@@ -7,10 +7,7 @@ import android.net.wifi.WpsInfo
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pManager
-import android.os.Build
 import android.util.Log
-import android.widget.TextView
-import androidx.annotation.RequiresApi
 
 class WifiDirectManager (
     private var activity: MainActivity
@@ -59,9 +56,9 @@ class WifiDirectManager (
         manager?.requestPeers(mChannel) { peers ->
             activity.currentDeviceList = peers?.deviceList!!
         }
-        if (activity.piConnectionState == MainActivity.connectionState.NOT_CONNECTED &&
+        if (activity.piConnectionState == MainActivity.ConnectionState.NOT_CONNECTED &&
             activity.currentDeviceList.any { device: WifiP2pDevice -> device.deviceName == "NotiPi" }) {
-            activity.piConnectionState = MainActivity.connectionState.CONNECTING
+            activity.piConnectionState = MainActivity.ConnectionState.CONNECTING
             connectToPiDevice(activity.currentDeviceList.filter { device: WifiP2pDevice -> device.deviceName == "NotiPi" }[0].deviceAddress)
         }
     }
@@ -81,7 +78,7 @@ class WifiDirectManager (
             }
 
             override fun onFailure(reason: Int) {
-                activity.piConnectionState = MainActivity.connectionState.NOT_CONNECTED
+                activity.piConnectionState = MainActivity.ConnectionState.NOT_CONNECTED
                 Log.d(
                     "WifiP2pManager",
                     "Failed to connect to NotiPi device (${config.deviceAddress}), reason: $reason"

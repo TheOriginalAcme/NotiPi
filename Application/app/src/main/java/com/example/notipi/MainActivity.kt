@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Build
 import android.net.wifi.p2p.WifiP2pDevice
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.widget.EditText
@@ -15,15 +14,15 @@ import androidx.appcompat.app.AppCompatActivity
 @RequiresApi(Build.VERSION_CODES.M)
 class MainActivity : AppCompatActivity()
 {
-    enum class connectionState {
+    enum class ConnectionState {
         NOT_CONNECTED, CONNECTING, CONNECTED
     }
 
     private var notificationManager: NotificationManager = NotificationManager(this)
-    private var permissionRequester : PermissionRequester = PermissionRequester(this)
+    var permissionRequester : PermissionRequester = PermissionRequester(this)
     private lateinit var wifiDirectManager : WifiDirectManager
     private lateinit var nameInput: EditText
-    var piConnectionState : connectionState = connectionState.NOT_CONNECTED
+    var piConnectionState : ConnectionState = ConnectionState.NOT_CONNECTED
     var currentDeviceList : MutableCollection<WifiP2pDevice> = mutableListOf<WifiP2pDevice>()
 
     override fun onCreate(savedInstanceState: Bundle?) {

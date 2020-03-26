@@ -87,19 +87,19 @@ class PermissionRequester(
         }
     }
 
-    private fun requestWifiServices()
+    fun requestWifiServices()
     {
         val wifiManager : WifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         Log.d("turnWifiOn", "Requesting to enable WiFi")
         if (!wifiManager.isWifiEnabled) {
             Log.d("turnWifiOn", "Wifi is currently off.")
-            val alertDialogBuilder = AlertDialog.Builder(context)
-            alertDialogBuilder.setMessage("This app needs WiFi enabled. Please turn on WiFi in Settings")
+            val alertDialog = AlertDialog.Builder(context)
+            alertDialog.setMessage("This app needs WiFi enabled. Please turn on WiFi in Settings")
                 .setTitle("WiFi is required")
                 .setCancelable(false)
                 .setPositiveButton("Settings") { dialogInterface: DialogInterface, i: Int -> context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) }
-                .setNegativeButton("Cancel") { dialogInterface: DialogInterface, i: Int -> Toast.makeText(context, "The app won't work without wifi you fool", Toast.LENGTH_SHORT).show() }
-            alertDialogBuilder.create().show()
+//                .setNegativeButton("Cancel") { dialogInterface: DialogInterface, i: Int -> Toast.makeText(context, "The app won't work without wifi you fool", Toast.LENGTH_SHORT).show() }
+            alertDialog.create().show()
         }
     }
 }
