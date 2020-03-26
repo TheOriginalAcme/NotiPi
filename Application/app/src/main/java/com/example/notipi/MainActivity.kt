@@ -2,6 +2,7 @@ package com.example.notipi
 
 import android.content.Intent
 import android.os.Build
+import android.net.wifi.p2p.WifiP2pDevice
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
@@ -14,11 +15,16 @@ import androidx.appcompat.app.AppCompatActivity
 @RequiresApi(Build.VERSION_CODES.M)
 class MainActivity : AppCompatActivity()
 {
+    enum class connectionState {
+        NOT_CONNECTED, CONNECTING, CONNECTED
+    }
+
     private var notificationManager: NotificationManager = NotificationManager(this)
     private var permissionRequester : PermissionRequester = PermissionRequester(this)
-    private lateinit var wifiP2pManager : WifiP2pManager
+    private lateinit var wifiDirectManager : WifiDirectManager
     private lateinit var nameInput: EditText
-    var connectedToPi : Boolean = false
+    var piConnectionState : connectionState = connectionState.NOT_CONNECTED
+    var currentDeviceList : MutableCollection<WifiP2pDevice> = mutableListOf<WifiP2pDevice>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,7 +40,7 @@ class MainActivity : AppCompatActivity()
             notificationManager.buildNotificationServiceAlertDialog().show()
         }
 
-        wifiP2pManager = WifiP2pManager(this)
+        wifiDirectManager = WifiDirectManager(this)
 
         Log.d("MainActivity", "Finished on create")
     }
@@ -48,24 +54,28 @@ class MainActivity : AppCompatActivity()
         wifiP2pManager.discoverPeers()
     }
 
-    fun findPiDeviceAndConnect() {
-        wifiP2pManager.findPiDeviceAndConnect()
+    fun updateDeviceList() {
+        wifiDirectManager.updateDeviceList()
+    }
+
+    fun discoverPeers() {
+        wifiDirectManager.discoverPeers()
     }
 
     /** register the BroadcastReceiver with the intent values to be matched  */
     override fun onResume() {
         super.onResume()
-        wifiP2pManager.registerP2pReceiver()
+        wifiDirectManager.registerP2pReceiver()
     }
 
     override fun onPause() {
         super.onPause()
-        wifiP2pManager.unregisterP2pReceiver()
+        wifiDirectManager.unregisterP2pReceiver()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        wifiP2pManager.unregisterP2pReceiver()
+        wifiDirectManager.unregisterP2pReceiver()
     }
 
     fun submitName(view: View) {

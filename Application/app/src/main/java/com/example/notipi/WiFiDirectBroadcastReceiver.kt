@@ -44,10 +44,7 @@ class WiFiDirectBroadcastReceiver(
             WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION -> {
                 // Call WifiP2pManager.requestPeers() to get a list of current peers
                 Log.d("WifiDirectBroadcastReceiver", "Wifi peers changed")
-                if (!activity.connectedToPi)
-                {
-                    activity.findPiDeviceAndConnect()
-                }
+                activity.updateDeviceList()
             }
             WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION -> {
                 // Respond to new connection or disconnections
@@ -60,10 +57,11 @@ class WiFiDirectBroadcastReceiver(
                     activity.showToast("Connection Status: Connected")
                     Log.d("WifiDirectBroadcastReceiver", "Connected")
                     manager!!.requestConnectionInfo(channel, WifiConnectionListener)
+                    activity.piConnectionState = MainActivity.connectionState.CONNECTED
                 } else {
                     activity.showToast("Connection Status: Disconnected")
                     Log.d("WifiDirectBroadcastReceiver", "Not Connected")
-                    activity.connectedToPi = false
+                    activity.piConnectionState = MainActivity.connectionState.NOT_CONNECTED
                     manager!!.cancelConnect(channel, null)
                 }
 
@@ -79,6 +77,7 @@ class WiFiDirectBroadcastReceiver(
     private object WifiConnectionListener : WifiP2pManager.ConnectionInfoListener {
         override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
             Log.d("WifiConnectionListener", info.toString())
+            //DataServerAsyncTask(activity.findViewById<TextView>(R.id.textView)).execute()
         }
 
     }
