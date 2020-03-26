@@ -8,6 +8,7 @@ import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
 import android.net.wifi.p2p.WifiP2pManager
 import android.util.Log
+import android.widget.TextView
 
 class WifiDirectManager (
     private var activity: MainActivity
@@ -74,6 +75,7 @@ class WifiDirectManager (
             override fun onSuccess() {
                 Log.d("WifiP2pManager", "Connected to NotiPi device (${config.deviceAddress})")
                 Log.d("WifiP2pManager", "Starting server...")
+                DataServerAsyncTask(activity.findViewById(R.id.textView)).execute()
             }
 
             override fun onFailure(reason: Int) {

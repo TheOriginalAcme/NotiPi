@@ -13,25 +13,24 @@ class DataServerAsyncTask(
         /**
          * Create a server socket.
          */
-        val serverSocket = Socket()
-//        Log.d("DataServer", "Socket opened")
-//        return serverSocket.use {
-//            /**
-//             * Wait for client connections. This call blocks until a
-//             * connection is accepted from a client.
-//             */
-//            val client = serverSocket.accept()
-//            Log.d("DataServer", "Connection done")
-//            /**
-//             * If this code is reached, a client has connected and transferred data
-//             * Save the input stream from the client
-//             */
-//            val inputStream = client.getInputStream()
-//            Log.d("DataServer", inputStream.toString())
-//            serverSocket.close()
-//            "Data: $inputStream"
-//        }
-        return "what"
+        val clientSocket = Socket("192.168.1.2", 13109)
+        Log.d("DataServer", "Socket opened")
+        return clientSocket.use {
+            /**
+             * Wait for client connections. This call blocks until a
+             * connection is accepted from a client.
+             */
+            clientSocket.connect(clientSocket.localSocketAddress)
+            Log.d("DataServer", "Connection done")
+            /**
+             * If this code is reached, a client has connected and transferred data
+             * Save the input stream from the client
+             */
+            val inputStream = clientSocket.getInputStream()
+            Log.d("DataServer", inputStream.toString())
+            clientSocket.close()
+            "Data: $inputStream"
+        }
     }
 
     /**
