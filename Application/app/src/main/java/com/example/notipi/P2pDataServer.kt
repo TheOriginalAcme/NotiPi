@@ -9,7 +9,8 @@ import java.net.InetAddress
 import java.net.Socket
 
 class DataServerAsyncTask(
-    private var statusText: TextView
+    private var statusText: TextView,
+    private var address: InetAddress?
 ) : AsyncTask<Void, Void, String?>() {
 
     override fun doInBackground(vararg params: Void): String? {
@@ -17,8 +18,11 @@ class DataServerAsyncTask(
          * Create a server socket.
          */
         val ds = DatagramSocket()
-        val dp = DatagramPacket("Hello".toByteArray(), 5, InetAddress.getByName("192.168.1.2"), 13109)
-        ds.broadcast = true
+        val dp = DatagramPacket("Hello".toByteArray(), 5, address, 13109)
+
+        ds.reuseAddress = true
+
+
         while (true) {
             ds.send(dp)
             Log.d("DataServerAsyncTask", "Sent message")

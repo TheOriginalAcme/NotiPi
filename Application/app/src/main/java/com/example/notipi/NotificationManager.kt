@@ -69,8 +69,13 @@ class MyNotificationListener : NotificationListenerService() {
         Log.i("Notification", "############################")
         Log.i("Package", pack)
         Log.i("Ticker", ticker)
-        Log.i("Title", title)
-        Log.i("Text", text)
+        if (!title.isNullOrBlank()) {
+            Log.i("Title", title)
+        }
+        if (!text.isNullOrBlank()) {
+            Log.i("Text", text)
+
+        }
     }
 
     override fun onNotificationRemoved(sbn: StatusBarNotification?)

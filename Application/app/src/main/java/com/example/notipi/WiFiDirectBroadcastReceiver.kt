@@ -9,6 +9,7 @@ import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.os.Build
 import android.util.Log
+import android.widget.TextView
 import androidx.annotation.RequiresApi
 
 /**
@@ -21,6 +22,7 @@ class WiFiDirectBroadcastReceiver(
     private val activity: MainActivity
 ) : BroadcastReceiver() {
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     @SuppressLint("LongLogTag")
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
@@ -57,13 +59,17 @@ class WiFiDirectBroadcastReceiver(
                 if (networkState.isConnected()) {
                     activity.showToast("Connection Status: Connected")
                     Log.d("WifiDirectBroadcastReceiver", "Connected")
-                    manager!!.requestConnectionInfo(channel, WifiConnectionListener)
-                    activity.piConnectionState = MainActivity.ConnectionState.CONNECTED
+                    manager!!.requestConnectionInfo(channel) {info: WifiP2pInfo? ->  Log.d("Wifithing", "$info")
+                        DataServerAsyncTask(activity.findViewById<TextView>(R.id.textView),
+                            info?.groupOwnerAddress
+                        ).execute()}
+                    activity.piConnectionState.value = MainActivity.ConnectionState.CONNECTED
                 } else {
                     activity.showToast("Connection Status: Disconnected")
                     Log.d("WifiDirectBroadcastReceiver", "Not Connected")
-                    activity.piConnectionState = MainActivity.ConnectionState.NOT_CONNECTED
+                    activity.piConnectionState.value = MainActivity.ConnectionState.NOT_CONNECTED
                     manager!!.cancelConnect(channel, null)
+                    activity.updateDeviceList()
                 }
 
             }
@@ -73,13 +79,7 @@ class WiFiDirectBroadcastReceiver(
                 Log.d("WifiDirectBroadcastReceiver", "device's wifi state changed")
             }
         }
-    }
-
-    private object WifiConnectionListener : WifiP2pManager.ConnectionInfoListener {
-        override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
-            Log.d("WifiConnectionListener", info.toString())
-//            DataServerAsyncTask(activity.findViewById<TextView>(R.id.textView)).execute()
-        }
 
     }
+
 }

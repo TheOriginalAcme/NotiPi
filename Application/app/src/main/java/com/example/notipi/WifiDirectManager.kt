@@ -3,9 +3,11 @@ package com.example.notipi
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.IntentFilter
+import android.net.NetworkInfo
 import android.net.wifi.WpsInfo
 import android.net.wifi.p2p.WifiP2pConfig
 import android.net.wifi.p2p.WifiP2pDevice
+import android.net.wifi.p2p.WifiP2pInfo
 import android.net.wifi.p2p.WifiP2pManager
 import android.util.Log
 
@@ -52,14 +54,25 @@ class WifiDirectManager (
 
     }
 
+    fun resetConnection() {
+        manager?.cancelConnect(mChannel, null)
+        manager?.stopPeerDiscovery(mChannel, null)
+        manager?.removeGroup(mChannel, null)
+        unregisterP2pReceiver()
+        registerP2pReceiver()
+        activity.piConnectionState.value = MainActivity.ConnectionState.NOT_CONNECTED
+//        discoverPeers()
+        updateDeviceList()
+    }
+
     fun updateDeviceList() {
         manager?.requestPeers(mChannel) { peers ->
             activity.currentDeviceList = peers?.deviceList!!
         }
-        if (activity.piConnectionState == MainActivity.ConnectionState.NOT_CONNECTED &&
+        if (activity.piConnectionState.value == MainActivity.ConnectionState.NOT_CONNECTED &&
             activity.currentDeviceList.any { device: WifiP2pDevice -> device.deviceName == "NotiPi" }) {
             Log.d("updateDeviceList", "Connecting")
-            activity.piConnectionState = MainActivity.ConnectionState.CONNECTING
+            activity.piConnectionState.value = MainActivity.ConnectionState.CONNECTING
             connectToPiDevice(activity.currentDeviceList.filter { device: WifiP2pDevice -> device.deviceName == "NotiPi" }[0].deviceAddress)
         }
     }
@@ -69,23 +82,35 @@ class WifiDirectManager (
 
         config.deviceAddress = deviceAddress
         config.wps.pin = "13371337"
-        config.wps.setup = WpsInfo.PBC
+        config.wps.setup = WpsInfo.KEYPAD
+        config.groupOwnerIntent = 0
 
         manager?.connect(mChannel, config, object : WifiP2pManager.ActionListener {
             override fun onSuccess() {
-                Log.d("WifiP2pManager", "Connected to NotiPi device (${config.deviceAddress})")
-                Log.d("WifiP2pManager", "Starting server...")
-//                DataServerAsyncTask(activity.findViewById(R.id.textView)).execute()
+                Log.d("WifiP2pManager", "Invited NotiPi device (${config.deviceAddress})")
+                Log.d("WifiP2pManager", "Waiting to get connected...")
             }
 
             override fun onFailure(reason: Int) {
-                activity.piConnectionState = MainActivity.ConnectionState.NOT_CONNECTED
+                activity.piConnectionState.value = MainActivity.ConnectionState.NOT_CONNECTED
                 Log.d(
                     "WifiP2pManager",
                     "Failed to connect to NotiPi device (${config.deviceAddress}), reason: $reason"
                 )
             }
         })
+    }
+
+    fun getConnectionStatus() {
+        manager!!.requestConnectionInfo(mChannel, WifiConnectionListener)
+    }
+
+    private object WifiConnectionListener : WifiP2pManager.ConnectionInfoListener {
+        override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
+            Log.d("WifiConnectionListener", info.toString())
+//            DataServerAsyncTask(activity.findViewById<TextView>(R.id.textView)).execute()
+        }
+
     }
 
 }

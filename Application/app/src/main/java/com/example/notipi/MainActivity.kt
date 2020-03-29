@@ -10,6 +10,9 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
+import kotlinx.android.synthetic.main.activity_main.*
 
 @RequiresApi(Build.VERSION_CODES.M)
 class MainActivity : AppCompatActivity()
@@ -22,7 +25,7 @@ class MainActivity : AppCompatActivity()
     var permissionRequester : PermissionRequester = PermissionRequester(this)
     private lateinit var wifiDirectManager : WifiDirectManager
     private lateinit var nameInput: EditText
-    var piConnectionState : ConnectionState = ConnectionState.NOT_CONNECTED
+    var piConnectionState : MutableLiveData<ConnectionState> = MutableLiveData()
     var currentDeviceList : MutableCollection<WifiP2pDevice> = mutableListOf<WifiP2pDevice>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,6 +43,21 @@ class MainActivity : AppCompatActivity()
         }
 
         wifiDirectManager = WifiDirectManager(this)
+        piConnectionState.value = ConnectionState.NOT_CONNECTED
+        connectionStateText.text = "Not Connected"
+        piConnectionState.observe(this, Observer {
+            when(piConnectionState.value) {
+                ConnectionState.NOT_CONNECTED -> {
+                    connectionStateText.text = "Not Connected"
+                }
+                ConnectionState.CONNECTING -> {
+                    connectionStateText.text = "Connecting"
+                }
+                ConnectionState.CONNECTED -> {
+                    connectionStateText.text = "Connected"
+                }
+            }
+        })
 
         Log.d("MainActivity", "Finished on create")
     }
@@ -79,9 +97,20 @@ class MainActivity : AppCompatActivity()
         showToast(nameInput.text.toString())
     }
 
+    fun getConnectionStatus(view: View) {
+        Log.d("getConnectionStatus", "Getting connection status")
+        wifiDirectManager.getConnectionStatus()
+        wifiDirectManager.updateDeviceList()
+    }
+
+    fun resetConnection(view: View) {
+        wifiDirectManager.resetConnection()
+    }
+
     fun showToast(text: String) {
         Toast.makeText(applicationContext, text, Toast.LENGTH_SHORT).show()
     }
+
 }
 
 
