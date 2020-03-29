@@ -12,12 +12,12 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.gms.tasks.Task
+import kotlinx.android.synthetic.main.activity_main.view.*
 
 @RequiresApi(Build.VERSION_CODES.M)
 class PermissionRequester(
@@ -28,12 +28,12 @@ class PermissionRequester(
                                     Manifest.permission.ACCESS_FINE_LOCATION,
                                     Manifest.permission.ACCESS_COARSE_LOCATION)
     private val deniedPermissions = mutableListOf<String>()
+    private var alertDialog : AlertDialog? = null
 
     fun getNeededPermissions() {
         checkPermissions()
         requestPermissions()
         requestLocationServices()
-        requestWifiServices()
     }
 
     private fun checkPermissions() {
@@ -91,15 +91,17 @@ class PermissionRequester(
     {
         val wifiManager : WifiManager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         Log.d("turnWifiOn", "Requesting to enable WiFi")
-        if (!wifiManager.isWifiEnabled) {
+        if (!wifiManager.isWifiEnabled && alertDialog == null) {
             Log.d("turnWifiOn", "Wifi is currently off.")
-            val alertDialog = AlertDialog.Builder(context)
-            alertDialog.setMessage("This app needs WiFi enabled. Please turn on WiFi in Settings")
+            val alertDialogBuilder = AlertDialog.Builder(context)
+            alertDialogBuilder.setMessage("This app needs WiFi enabled. Please turn on WiFi in Settings")
                 .setTitle("WiFi is required")
                 .setCancelable(false)
+                .setOnDismissListener { alertDialog = null }
                 .setPositiveButton("Settings") { dialogInterface: DialogInterface, i: Int -> context.startActivity(Intent(Settings.ACTION_WIFI_SETTINGS)) }
 //                .setNegativeButton("Cancel") { dialogInterface: DialogInterface, i: Int -> Toast.makeText(context, "The app won't work without wifi you fool", Toast.LENGTH_SHORT).show() }
-            alertDialog.create().show()
+            alertDialog = alertDialogBuilder.create() as AlertDialog
+            alertDialog!!.show()
         }
     }
 }
