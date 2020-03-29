@@ -78,7 +78,7 @@ class WiFiDirectBroadcastReceiver(
     private object WifiConnectionListener : WifiP2pManager.ConnectionInfoListener {
         override fun onConnectionInfoAvailable(info: WifiP2pInfo?) {
             Log.d("WifiConnectionListener", info.toString())
-            //DataServerAsyncTask(activity.findViewById<TextView>(R.id.textView)).execute()
+//            DataServerAsyncTask(activity.findViewById<TextView>(R.id.textView)).execute()
         }
 
     }

@@ -58,6 +58,7 @@ class WifiDirectManager (
         }
         if (activity.piConnectionState == MainActivity.ConnectionState.NOT_CONNECTED &&
             activity.currentDeviceList.any { device: WifiP2pDevice -> device.deviceName == "NotiPi" }) {
+            Log.d("updateDeviceList", "Connecting")
             activity.piConnectionState = MainActivity.ConnectionState.CONNECTING
             connectToPiDevice(activity.currentDeviceList.filter { device: WifiP2pDevice -> device.deviceName == "NotiPi" }[0].deviceAddress)
         }
@@ -74,7 +75,7 @@ class WifiDirectManager (
             override fun onSuccess() {
                 Log.d("WifiP2pManager", "Connected to NotiPi device (${config.deviceAddress})")
                 Log.d("WifiP2pManager", "Starting server...")
-                DataServerAsyncTask(activity.findViewById(R.id.textView)).execute()
+//                DataServerAsyncTask(activity.findViewById(R.id.textView)).execute()
             }
 
             override fun onFailure(reason: Int) {
