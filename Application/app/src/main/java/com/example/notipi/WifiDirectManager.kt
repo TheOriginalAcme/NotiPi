@@ -69,6 +69,12 @@ class WifiDirectManager (
         manager?.requestPeers(mChannel) { peers ->
             activity.currentDeviceList = peers?.deviceList!!
         }
+        if (activity.currentDeviceList.any { device: WifiP2pDevice -> device.deviceName == "NotiPi" }) {
+            Log.d("updateDeviceList", "Found NotiPi")
+        }
+        else {
+            Log.d("updateDeviceList", "Did not find NotiPi")
+        }
         if (activity.piConnectionState.value == MainActivity.ConnectionState.NOT_CONNECTED &&
             activity.currentDeviceList.any { device: WifiP2pDevice -> device.deviceName == "NotiPi" }) {
             Log.d("updateDeviceList", "Connecting")

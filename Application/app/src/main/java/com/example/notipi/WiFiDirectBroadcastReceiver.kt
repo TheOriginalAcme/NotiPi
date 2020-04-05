@@ -60,8 +60,8 @@ class WiFiDirectBroadcastReceiver(
                     activity.showToast("Connection Status: Connected")
                     Log.d("WifiDirectBroadcastReceiver", "Connected")
                     manager!!.requestConnectionInfo(channel) {info: WifiP2pInfo? ->  Log.d("Wifithing", "$info")
-                        DataServerAsyncTask(activity.findViewById<TextView>(R.id.textView),
-                            info?.groupOwnerAddress
+                        DataServerAsyncTask(info?.groupOwnerAddress,
+                                            activity
                         ).execute()}
                     activity.piConnectionState.value = MainActivity.ConnectionState.CONNECTED
                 } else {
